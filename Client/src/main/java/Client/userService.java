@@ -37,7 +37,7 @@ public class userService {
 
 
     @RabbitListener(queues = "rib.created.queue")
-    public void processRib(User user, Message message) {
+    public void queueListener(User user, Message message) {
         Object service = ctx.getBean(message.getMessageProperties().getHeaders().get("ServiceName").toString());
         Method method = null;
         try {
@@ -46,8 +46,7 @@ public class userService {
         } catch (NoSuchMethodException e) {
         }
         try {
-            Object response = method.invoke(service, user);
-            mq.convertAndSend(message.getMessageProperties().getReplyTo(), user);
+            mq.convertAndSend(message.getMessageProperties().getReplyTo(), method.invoke(service, user));
         } catch (IllegalAccessException e) {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
